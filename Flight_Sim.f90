@@ -31,6 +31,7 @@ function quat_mult(A, B) result(answer)
     
 end function quat_mult
 
+
 !Write a function named quat_base_to_dependent to compute a vector
 !   transformation using the Euler-Rodrigues quaternion. The function
 !   should accept an array of length three containing the three 
@@ -40,9 +41,13 @@ end function quat_mult
 !   coordinate system. This function should return an array of length
 !   three containing the vector components in the dependent 
 !   coordinate system.
-! function quat_base_to_dependent() result()
+function quat_base_to_dependent(base, E) result()
+    
+    implicit none
+    real(dp), dimension(3), intent(in) :: base !array of length three containing the three components of a vector in the base coordinate system
+    real(dp), dimension(4), intent(in) :: E !array of length four containing the four components of the quaternion that represent the orientation of the dependent coordinate system
 
-! end function quat_base_to_dependent
+end function quat_base_to_dependent
 
 end module my_functions
 
