@@ -1,6 +1,6 @@
 module my_functions
 implicit none
-integer, parameter :: dp = selected_real_kind(16,307)
+! integer, parameter :: dp = selected_real_kind(16,307)
 
 contains
 !Write a function named quat_mult that accepts two arrays of length 
@@ -8,9 +8,9 @@ contains
 function quat_mult(A, B) result(answer)
     implicit none
 
-    real(dp), dimension(4), intent(in) :: A, B
-    real(dp) :: A0, Ax, Ay, Az, B0, Bx, By, Bz
-    real(dp), dimension(4) :: answer
+    real, dimension(4), intent(in) :: A, B
+    real :: A0, Ax, Ay, Az, B0, Bx, By, Bz
+    real, dimension(4) :: answer
 
     A0 = A(1)
     Ax = A(2)
@@ -22,12 +22,15 @@ function quat_mult(A, B) result(answer)
     By = B(3)
     Bz = B(4)
 
-    answer(1) = A0*B0 - Ax*Bx - Ay*By - Az*Bz
-    answer(2) = A0*Bx + Ax*B0 + Ay*Bz - Az*By
-    answer(3) = A0*By - Ax*Bz + Ay*B0 + Az*Bx
-    answer(4) = A0*Bz + Ax*By - Ay*Bx + Az*B0
-
-    write(*,*) answer
+    ! answer(1) = A0*B0 - Ax*Bx - Ay*By - Az*Bz
+    ! answer(2) = A0*Bx + Ax*B0 + Ay*Bz - Az*By
+    ! answer(3) = A0*By - Ax*Bz + Ay*B0 + Az*Bx
+    ! answer(4) = A0*Bz + Ax*By - Ay*Bx + Az*B0
+    answer = [A0*B0 - Ax*Bx - Ay*By - Az*Bz, &
+              A0*Bx + Ax*B0 + Ay*Bz - Az*By, &
+              A0*By - Ax*Bz + Ay*B0 + Az*Bx, &
+              A0*Bz + Ax*By - Ay*Bx + Az*B0]
+    ! write(*,*) answer
     
 end function quat_mult
 
@@ -41,13 +44,34 @@ end function quat_mult
 !   coordinate system. This function should return an array of length
 !   three containing the vector components in the dependent 
 !   coordinate system.
-function quat_base_to_dependent(base, E) result()
+function quat_base_to_dependent(base, E) result(e_rod)
     
     implicit none
-    real(dp), dimension(3), intent(in) :: base !array of length three containing the three components of a vector in the base coordinate system
-    real(dp), dimension(4), intent(in) :: E !array of length four containing the four components of the quaternion that represent the orientation of the dependent coordinate system
+    real, dimension(3), intent(in) :: base !array of length three containing the three components of a vector in the base coordinate system
+    real, dimension(4), intent(in) :: E !array of length four containing the four components of the quaternion that represent the orientation of the dependent coordinate system
+    real, dimension(4) :: e_rod, T
+    real, dimension(3) :: answer
+    real :: pi=3.1415926535897932385
+    real :: theta_deg, theta_rad, Ex, Ey, Ez, vx1, vy1, vz1
 
+    theta_deg = E(1)
+    theta_rad = theta_deg*pi/180
+    Ex = E(2)
+    Ey = E(3)
+    Ez = E(4)
+    
+    vx1 = base(1)
+    vy1 = base(2)
+    vz1 = base(3)
+
+    e_rod = [cos(theta_rad/2), &
+            Ex*sin(theta_rad/2), &
+            Ey*sin(theta_rad/2), &
+            Ez*sin(theta_rad/2)]
+    
+    
 end function quat_base_to_dependent
+
 
 end module my_functions
 
@@ -55,7 +79,8 @@ program Flight_Sim
 use my_functions
 
 implicit none
-real(dp), dimension(4) :: test
+real, dimension(4) :: test
 
-test = quat_mult([1._dp, 2._dp, 3._dp, 4._dp], [1._dp, 2._dp, 3._dp, 4._dp])
+test = quat_base_to_dependent([1., 2., 3.], [45., 2., 3., 4.])
+write(*,*) test
 end program Flight_Sim
