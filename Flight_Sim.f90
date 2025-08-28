@@ -44,15 +44,15 @@ end function quat_mult
 !   coordinate system. This function should return an array of length
 !   three containing the vector components in the dependent 
 !   coordinate system.
-function quat_base_to_dependent(base, E) result(e_rod)
+function quat_base_to_dependent(base, E) result(v2)
     
     implicit none
     real, dimension(3), intent(in) :: base !array of length three containing the three components of a vector in the base coordinate system
     real, dimension(4), intent(in) :: E !array of length four containing the four components of the quaternion that represent the orientation of the dependent coordinate system
     real, dimension(4) :: e_rod, T
-    real, dimension(3) :: answer
+    real, dimension(3) :: v2
     real :: pi=3.1415926535897932385
-    real :: theta_deg, theta_rad, Ex, Ey, Ez, vx1, vy1, vz1
+    real :: theta_deg, theta_rad, Ex, Ey, Ez, vx1, vy1, vz1, erod0, erodx, erody, erodz, T0, Tx, Ty, Tz
 
     theta_deg = E(1)
     theta_rad = theta_deg*pi/180
@@ -69,7 +69,20 @@ function quat_base_to_dependent(base, E) result(e_rod)
             Ey*sin(theta_rad/2), &
             Ez*sin(theta_rad/2)]
     
+    T = [-vx1*erodx - vy1*erody - vz1*erodz, &
+         vx1*erod0 + vy1*erodz - vz1*erody, &
+         -vx1*erodz + vy1*erod0 + vz1*erodz, &
+          vx1*erody - vy1*erodx + vz1*erod0]
     
+    T0 = T(1)
+    Tx = T(2)
+    Ty = T(3)
+    Tz = T(4)
+
+    v2 = [erod0*Tx - erodx*T0 - erody*Tz + erodz*Ty, &
+          erod0*Ty + erodx*Tz - erody*T0 - erodz*Tx, &
+         erod0*Tz - erodx*Ty - erody*Tx - erodz*T0]    
+
 end function quat_base_to_dependent
 
 
@@ -79,7 +92,7 @@ program Flight_Sim
 use my_functions
 
 implicit none
-real, dimension(4) :: test
+real, dimension(3) :: test
 
 test = quat_base_to_dependent([1., 2., 3.], [45., 2., 3., 4.])
 write(*,*) test
