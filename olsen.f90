@@ -1,8 +1,8 @@
-module my_functions
+module olsen_m
 implicit none
 ! integer, parameter :: dp = selected_real_kind(16,307)
-real :: pi=3.1415926535897932385
-
+real, parameter :: PI=3.1415926535897932384626433832795
+real, parameter :: TOLERANCE = 1.0e-12
 contains
 
 function quat_mult(A, B) result(answer)
@@ -103,21 +103,21 @@ function quat_dependent_to_base(v2, e) result(v1)
           v1_four(4)] 
 end function quat_dependent_to_base
 
-function quat_norm(Q) result(Q_norm)
+subroutine quat_norm(Q)
     !1.8.6 Write a function named quat_norm that accepts an array of length four 
     !   containing a quaternion, and returns the normalized quaternion. For this
     !   computation, use the exact solution given in Eq. (1.5.12). You may wish to
     !   overwrite the quaternion that was passed in to the function with the 
     !   normalized solution.
     implicit none
-    real, dimension(4), intent(in) :: Q
-    real, dimension(4) :: Q_norm
+    real, dimension(4), intent(inout) :: Q
+    ! real, dimension(4) :: Q_norm
     real :: mag
 
     mag = sqrt(Q(1)*Q(1) + Q(2)*Q(2) + Q(3)*Q(3) + Q(4)*Q(4)) !eq. 1.5.12
-    Q_norm = Q/mag
+    Q = Q/mag
 
-end function quat_norm
+end subroutine quat_norm
 
 function euler_to_quat(euler) result(e)
     !1.8.7 Write a function called euler_to_quat that accepts an array of length
@@ -128,9 +128,9 @@ function euler_to_quat(euler) result(e)
     real, dimension(4) :: e 
     real :: phi_rad, theta_rad, psi_rad
 
-    phi_rad = Euler(1)*pi/180
-    theta_rad = Euler(2)*pi/180
-    psi_rad = Euler(3)*pi/180
+    phi_rad = Euler(1)!*PI/180
+    theta_rad = Euler(2)!*PI/180
+    psi_rad = Euler(3) !*PI/180
 
     e = [cos(phi_rad/2)*cos(theta_rad/2)*cos(psi_rad/2) + sin(phi_rad/2)*sin(theta_rad/2)*sin(psi_rad/2), &
          sin(phi_rad/2)*cos(theta_rad/2)*cos(psi_rad/2) - cos(phi_rad/2)*sin(theta_rad/2)*sin(psi_rad/2), &
@@ -154,16 +154,15 @@ function quat_to_euler(e) result(euler)
     ez = e(4)
     psi = 0.
 
-    write(*,*) e0*ey - ex*ez
-    if (e0*ey - ex*ez == 0.5) then
-        euler = [2*asin(ex/cos(pi/4)) + psi, &
-                 pi/2, &
+    if (abs(e0*ey - ex*ez - 0.5) < TOLERANCE) then
+        euler = [2*asin(ex/cos(PI/4)) + psi, &
+                 PI/2, &
                  psi]
     end if
 
-    if (e0*ey - ex*ez == -0.5) then
-        euler = [2*asin(ex/cos(pi/4)) - psi, &
-                 -pi/2, &
+    if ((e0*ey - ex*ez + 0.5) < TOLERANCE) then
+        euler = [2*asin(ex/cos(PI/4)) - psi, &
+                 -PI/2, &
                  psi]
     else
     euler = [atan2(2*(e0*ex + ey*ez), (e0*e0 + ez*ez - ex*ex - ey*ey)), &
@@ -173,14 +172,5 @@ function quat_to_euler(e) result(euler)
 
 end function quat_to_euler
 
-end module my_functions
+end module olsen_m
 
-program Flight_Sim
-use my_functions
-
-implicit none
-real, dimension(3) :: test
-
-test = quat_dependent_to_base([0., 1., 0.], [1., 2., 3., 4.])
-write(*,*) test
-end program Flight_Sim
