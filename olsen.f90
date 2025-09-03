@@ -126,16 +126,23 @@ function euler_to_quat(euler) result(e)
     implicit none
     real, dimension(3), intent(in) :: euler
     real, dimension(4) :: e 
-    real :: phi_rad, theta_rad, psi_rad
+    real :: phi_rad, theta_rad, psi_rad, cphi, cpsi, ctheta, sphi, spsi, stheta
 
-    phi_rad = Euler(1)!*PI/180
-    theta_rad = Euler(2)!*PI/180
-    psi_rad = Euler(3) !*PI/180
+    phi_rad = Euler(1)
+    theta_rad = Euler(2)
+    psi_rad = Euler(3)
 
-    e = [cos(phi_rad/2)*cos(theta_rad/2)*cos(psi_rad/2) + sin(phi_rad/2)*sin(theta_rad/2)*sin(psi_rad/2), &
-         sin(phi_rad/2)*cos(theta_rad/2)*cos(psi_rad/2) - cos(phi_rad/2)*sin(theta_rad/2)*sin(psi_rad/2), &
-         cos(phi_rad/2)*sin(theta_rad/2)*cos(psi_rad/2) + sin(phi_rad/2)*cos(theta_rad/2)*sin(psi_rad/2), &
-         cos(phi_rad/2)*cos(theta_rad/2)*sin(psi_rad/2) - sin(phi_rad/2)*sin(theta_rad/2)*cos(psi_rad/2)]
+    cphi = cos(phi_rad*0.5)
+    cpsi = cos(psi_rad*0.5)
+    ctheta = cos(theta_rad*0.5)
+    sphi = sin(phi_rad*0.5)
+    spsi = sin(psi_rad*0.5)
+    stheta = sin(theta_rad*0.5)
+
+    e = [cphi*ctheta*cpsi + sphi*stheta*spsi, &
+         sphi*ctheta*cpsi- cphi*stheta*spsi, &
+         cphi*stheta*cpsi + sphi*ctheta*spsi, &
+         cphi*ctheta*spsi - sphi*stheta*cpsi]
 
 end function euler_to_quat
 
@@ -156,13 +163,13 @@ function quat_to_euler(e) result(euler)
 
     if (abs(e0*ey - ex*ez - 0.5) < TOLERANCE) then
         euler = [2*asin(ex/cos(PI/4)) + psi, &
-                 PI/2, &
+                 PI*0.5, &
                  psi]
     end if
 
     if ((e0*ey - ex*ez + 0.5) < TOLERANCE) then
         euler = [2*asin(ex/cos(PI/4)) - psi, &
-                 -PI/2, &
+                 -PI*0.5, &
                  psi]
     else
     euler = [atan2(2*(e0*ex + ey*ez), (e0*e0 + ez*ez - ex*ex - ey*ey)), &
