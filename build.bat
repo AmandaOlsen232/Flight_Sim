@@ -1,0 +1,1 @@
+gfortran -fdefault-real-8 -Wall olsen.f90 main.f90
