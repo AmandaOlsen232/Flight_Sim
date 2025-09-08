@@ -17,13 +17,13 @@ real, dimension(8), parameter :: Zi_1 = [11000., 20000., 32000., 47000., 52000.,
 real, dimension(8), parameter :: Ti = [288.150, 216.650, 216.650, 228.650, 270.650, 270.650, 252.650, 180.650] ! [K]
 real, dimension(8), parameter :: Ti_p = [-6.5, 0.0, 1.0, 2.8, 0.0, -2.0, -4.0, 0.0]/1000 ! [K/km]
 real, dimension(8), parameter :: P_list = [101325.000000000, & 
-                                      22632.0318222212, &
-                                      5474.87352827083, & 
-                                      868.014769086723, & 
-                                      110.905588989225, & 
-                                      59.0005242789244, & 
-                                      18.2099249050177, & 
-                                      1.03770045489203]
+                                        22632.0318222212, &
+                                        5474.87352827083, & 
+                                        868.014769086723, & 
+                                        110.905588989225, & 
+                                        59.0005242789244, & 
+                                        18.2099249050177, & 
+                                        1.03770045489203]
 contains
 
 function quat_mult(A, B) result(answer)
@@ -237,7 +237,7 @@ subroutine std_atm_SI(H, Z, T, Pz, rho, a)
     real, intent(in) :: H
     real :: Pi
     real, dimension(5) :: std_atm
-    integer :: i, k
+    integer :: i
 
     !geopotential altitude
     Z = REz*H/(REz + H)
@@ -344,7 +344,6 @@ end module olsen_m
 
 ! program main
 ! use olsen_m
-
 
 ! real :: Z, T, P, rho, a 
 ! call vary_alt_si(Z, T, P, rho, a)
