@@ -16,7 +16,14 @@ real, dimension(9), parameter :: Zi = [0., 11000., 20000., 32000., 47000., 52000
 real, dimension(8), parameter :: Zi_1 = [11000., 20000., 32000., 47000., 52000., 61000., 79000., 90000.] ! [m]
 real, dimension(8), parameter :: Ti = [288.150, 216.650, 216.650, 228.650, 270.650, 270.650, 252.650, 180.650] ! [K]
 real, dimension(8), parameter :: Ti_p = [-6.5, 0.0, 1.0, 2.8, 0.0, -2.0, -4.0, 0.0]/1000 ! [K/km]
-
+real, dimension(8), parameter :: P_list = [101325.000000000, & 
+                                      22632.0318222212, &
+                                      5474.87352827083, & 
+                                      868.014769086723, & 
+                                      110.905588989225, & 
+                                      59.0005242789244, & 
+                                      18.2099249050177, & 
+                                      1.03770045489203]
 contains
 
 function quat_mult(A, B) result(answer)
@@ -247,15 +254,15 @@ subroutine std_atm_SI(H, Z, T, Pz, rho, a)
     T = Ti(i) + (Ti_p(i))*(Z - Zi(i))
     
     !Pressure
-    Pi = Po
+    Pi = P_list(i)
 
-    do k=1,i-1
-        if (abs(Ti_p(k)) < TOLERANCE) then
-            Pi = Pi*exp(-g_ssl*(Zi(k+1) - Zi(k))/(R*Ti(k)))
-        else 
-            Pi = Pi*((Ti(k) + (Ti_p(k))*(Zi(k+1) - Zi(k)))/Ti(k))**(-g_ssl/(R*Ti_p(k)))
-        end if
-    end do
+    ! do k=1,i-1
+    !     if (abs(Ti_p(k)) < TOLERANCE) then
+    !         Pi = Pi*exp(-g_ssl*(Zi(k+1) - Zi(k))/(R*Ti(k)))
+    !     else 
+    !         Pi = Pi*((Ti(k) + (Ti_p(k))*(Zi(k+1) - Zi(k)))/Ti(k))**(-g_ssl/(R*Ti_p(k)))
+    !     end if
+    ! end do
 
     if (abs(Ti_p(i)) < TOLERANCE) then
         Pz = Pi*exp(-g_ssl*(Z - Zi(i))/(R*Ti(i)))
