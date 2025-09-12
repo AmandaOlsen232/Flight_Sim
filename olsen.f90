@@ -340,12 +340,61 @@ subroutine vary_alt_english(Z, T, P, rho, a)
     end do
 end subroutine vary_alt_english 
 
+function runge_kutta(t0, y0, del_t) result(y1)
+    !to = time at begining of step
+    !y0 = function value at beginning of step
+    !del_t = step size 
+    !y = function value at end of step
+    implicit none 
+    real, intent(in) :: t0, y0, del_t 
+    real :: y1
+    real :: k1, k2, k3, k4 
+
+    k1 = differential_equations(t0, y0)
+    k2 = differential_equations(t0 + del_t/2, y0 + k1*del_t/2)
+    k3 = differential_equations(t0 + del_t/2, y0 + k2*del_t/2)
+    k4 = differential_equations(t0 + del_t, y0 + k3*del_t)
+    
+    y1 = y0 + (del_t/6)*(k1 + 2*k2 + 2*k3 + k4)
+    write(*,*) t0, y0, k1, k2, k3, k4, y1
+end function runge_kutta
+
+function differential_equations(t, y) result(dy_dt)
+    !t = time 
+    !y = value of y at time t 
+    !dy_dt = change in y with respecdt to t 
+    implicit none 
+    real, intent(in) :: t, y
+    real :: dy_dt 
+
+    dy_dt = 1 + tan(y)
+end function differential_equations
+
+subroutine test_main(t0, y0, del_t, y1, it) 
+    implicit none 
+    integer, intent(in) :: it
+    integer :: i 
+    real :: t0, y0, del_t
+    real, intent(inout) :: y1
+
+    do i=1, it
+        y1 = runge_kutta(t0, y0, del_t)
+        t0 = t0 + del_t 
+        y0 = y1 
+    end do
+end subroutine test_main 
+
 end module olsen_m
 
-! program main
-! use olsen_m
+program main
+use olsen_m
 
-! real :: Z, T, P, rho, a 
-! call vary_alt_si(Z, T, P, rho, a)
+real :: t0, y0, del_t, y1
 
-! end program main
+t0 = 0.0 
+y0 = 0.0
+del_t = 0.025 
+call test_main(t0, y0, del_t, y1, 11)
+write(*,*) y1
+
+end program main
