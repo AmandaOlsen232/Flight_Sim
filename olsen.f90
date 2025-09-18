@@ -3,13 +3,14 @@ use quat_math
 use atmosphere
 implicit none
 real :: Weight=0.006, & ! [lbf]
-        Diameter=1., & ! [ft]
-        Thickness=0.00131, & ! [ft]
-        alt=0., & ! [ft]
-        vel=200., &! [ft/s]
-        alpha=15., & ! [deg]
-        beta=10., &
-        P(3)=[1.,2.,3.] ! [deg]
+        Diameter=0.13084, & ! [ft]
+        R2 = 0.06542, & ! [ft]
+        R1 = 0.06411, & ![ft]
+        Skin_thickness=0.00131, & ! [ft]
+        alt=200., & ! [ft]
+        V_0=200., & ! [ft/s]
+        alpha = 15. ![deg]
+
 contains 
 
 function runge_kutta(t0, y0, del_t) result(y1)
@@ -36,35 +37,39 @@ subroutine mass_inertia(t, y, M, I)
     allocate(I(3,3))
     g = gravity_English(0.)
     M = Weight/g 
-    r2 = Diameter/2. 
-    r1 = r2 - Thickness
-    I = M*(2./5.)*((r2**5 - r1**5)/(r2**3 - r1**3)) * reshape([1.0, 0.0, 0.0, &
+    I = M*(2./5.)*((R2**5 - R1**5)/(R2**3 - R1**3)) * reshape([1.0, 0.0, 0.0, &
                                                              0.0, 1.0, 0.0, &
                                                              0.0, 0.0, 1.0], shape=[3,3])
-    write(*,*) M, M*(2./5.)*((r2**5 - r1**5)/(r2**3 - r1**3))
+
 end subroutine mass_inertia
 
-subroutine pseudo_aerodynamics(t, y, Fb, Mb)
+subroutine pseudo_aerodynamics(t, y, Fc, Mc)
     implicit none 
     real, intent(in) :: t 
     real, dimension(:), intent(in) :: y 
-    real, dimension(3), intent(inout) :: Fb, Mb 
-    real, dimension(3,3) :: R 
-    real :: eo, ex, ey, ez 
-    real :: Vb(3), Mc(3)
+    real, intent(inout) :: Fc(3), Mc(3) 
 
-    Mc = 0.
+    real :: Vb(3), V_mag, uc(3), volume, rho, Mass, Re, Z, Temp, P, a, mu, CD
+    real, allocatable :: I(:,:) 
+    
+    call std_atm_English(alt, Z, Temp, P, rho, a, mu)
+    
+    V_mag = norm2(y(1:3))
+    uc = y(1:3)/V_mag
+    Re = 2*rho*V_mag*R2/mu
+    
+    if (0<Re .and. Re <=450000) then
+        CD = (24/Re) + 6/(1+sqrt(Re)) + 0.4
+    else if (450000<Re .and. Re<=560000) then 
+        CD = 1.0e+29*Re**(-5.211)
+    else if (560000<Re .and. Re<=14000000) then 
+        CD = -2.0e-23*Re**3 - 1.0e-16*Re**2 + 9.0e-09*Re + 0.069
+    else if (Re > 14000000) then 
+        CD = 0.12
+    end if 
 
-    eo = y(10)
-    ex = y(11)
-    ey = y(12)
-    ez = y(13)
-    R = reshape([ex**2+eo**2-ey**2-ez**2, 2*(ex*ey-ez*eo), 2*(ex*ez+ey*eo), &
-                 2*(ex*ey+ez*eo), ey**2+eo**2-ex**2-ez**2, 2*(ey*ez-ex*eo), &
-                 2*(ex*ez-ey*eo), 2*(ey*ez+ex*eo), ez**2+eo**2-ex**2-ey**2], shape=[3,3])
-    write(*,*) R
-    Vb =vel*[cos(alpha*PI/180)*cos(beta*PI/180), sin(beta*PI/180), sin(alpha*PI/180)*cos(beta*PI/180)]
-    write(*,*) Vb
+    Fc = -0.5*rho*(V_mag**2)*PI*(R2**2)*CD*uc
+    Mc = 0
 end subroutine pseudo_aerodynamics
 
 function inv_3d(A) result(A_inv)
@@ -163,7 +168,7 @@ function simulation_main(t0, tf, del_t, y0) result(y1)
     real, dimension(:), allocatable :: y1
 
     do while (t0 < tf)
-        write(*,*) y0
+        write(*,*) y0    
         y1 = runge_kutta(t0, y0, del_t)
         call quat_norm(y1(10:13))
         t0 = t0 + del_t
@@ -182,14 +187,14 @@ use olsen_m
 real :: t0, tf, del_t 
 real, dimension(13) :: y0, test 
 ! real :: M 
-real, dimension(:,:), allocatable :: F, M
+real, dimension(3) :: F, M
 !y_array = [u, v, w, p, q, r, x, y, z, eo, ex, ey, ez]
-! t0 = 0.0
-! tf = 10.0 
-! del_t = 1.
-! y0 = [50., 0., 0., 0., 0., 0., 0., 0., -20., 1., 0., 0., 0.]
-! call quat_norm(y0(10:13))
-! test = simulation_main(t0, tf, del_t, y0)
-call pseudo_aerodynamics(0.1, [0.,0.], F, M)
+t0 = 0.0
+tf = 10.0 
+del_t = 0.01
+y0 = [50., 0., 0., 0., 0., 0., 0., 0., -20., 1., 0., 0., 0.]
+call quat_norm(y0(10:13))
+test = simulation_main(t0, tf, del_t, y0)
+
 
 end program main
