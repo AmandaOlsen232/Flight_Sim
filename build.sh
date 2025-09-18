@@ -1,1 +1,1 @@
-gfortran -fdefault-real-8 -Wall olsen.f90 main.f90
+gfortran -fdefault-real-8 -Wall quat_math.f90 atmosphere.f90 olsen.f90 
