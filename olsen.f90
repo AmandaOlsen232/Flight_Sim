@@ -8,7 +8,7 @@ real :: Weight=0.006, & ! [lbf]
         R1 = 0.06411, & ![ft]
         Skin_thickness=0.00131, & ! [ft]
         alt=200., & ! [ft]
-        V_0=200., & ! [ft/s]
+        V_0=50., & ! [ft/s]
         alpha = 15. ![deg]
 
 contains 
@@ -70,6 +70,7 @@ subroutine pseudo_aerodynamics(t, y, Fc, Mc)
 
     Fc = -0.5*rho*(V_mag**2)*PI*(R2**2)*CD*uc
     Mc = 0
+    
 end subroutine pseudo_aerodynamics
 
 function inv_3d(A) result(A_inv)
@@ -192,7 +193,7 @@ real, dimension(3) :: F, M
 t0 = 0.0
 tf = 10.0 
 del_t = 0.01
-y0 = [50., 0., 0., 0., 0., 0., 0., 0., -20., 1., 0., 0., 0.]
+y0 = [50., 0., 0., 0., 0., 0., 0., 0., -200., 1., 0., 0., 0.]
 call quat_norm(y0(10:13))
 test = simulation_main(t0, tf, del_t, y0)
 
